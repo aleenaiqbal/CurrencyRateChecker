@@ -1,21 +1,70 @@
 class RateChecker {
 
-    constructor(page, context) {
+    constructor(page, context, website) {
 
         this.page = page;
         this.context = context;
 
-        this.orderUrl =
-            'https://onlineexamhelp.co.uk/order/';
+        this.website =
+            website || {
+                name: 'Online Exam Help',
+                url: 'https://onlineexamhelp.co.uk/order/'
+            };
+
+        this.websiteName = this.website.name;
+        this.orderUrl = this.website.url;
 
         this.results = [];
 
-        // Test customer information
+        // =====================================================
+        // TEST CUSTOMER INFORMATION
+        // =====================================================
+
         this.testFirstName = 'Aleena';
         this.testLastName = 'Test';
+        this.testEmail = 'playwrighttest@example.com';
+        this.testPhone = '03001234567';
 
-        // Service to select from the order form
+        // =====================================================
+        // SERVICE
+        // =====================================================
+
         this.testService = 'Assignment';
+
+        // =====================================================
+        // TOLERANCE
+        // =====================================================
+
+        // 1 PKR tolerance
+        this.tolerance = 1;
+    }
+
+
+    // =========================================================
+    // SAFE WEBSITE NAME
+    // =========================================================
+
+    getSafeWebsiteName() {
+
+        return this.websiteName
+            .replace(/[^a-z0-9]/gi, '-')
+            .replace(/-+/g, '-')
+            .toLowerCase();
+    }
+
+
+    // =========================================================
+    // SCREENSHOT PATH
+    // =========================================================
+
+    getScreenshotPath(currency, type) {
+
+        const path = require('path');
+
+        return path.join(
+            'reports',
+            `${this.getSafeWebsiteName()}-${currency}-${type}.png`
+        );
     }
 
 
@@ -26,6 +75,9 @@ class RateChecker {
     async openOrderPage() {
 
         console.log('\n🌐 Opening order page...');
+
+        console.log(`🌐 Website: ${this.websiteName}`);
+        console.log(`🌐 URL: ${this.orderUrl}`);
 
         await this.page.goto(
             this.orderUrl,
@@ -44,7 +96,46 @@ class RateChecker {
 
 
     // =========================================================
-    // FILL FIRST NAME
+    // FIND VISIBLE INPUT
+    // =========================================================
+
+    async findVisibleInput(selectors) {
+
+        for (const selector of selectors) {
+
+            try {
+
+                const locator =
+                    this.page.locator(selector);
+
+                const count =
+                    await locator.count();
+
+                for (let i = 0; i < count; i++) {
+
+                    const element =
+                        locator.nth(i);
+
+                    if (
+                        await element.isVisible() &&
+                        await element.isEnabled()
+                    ) {
+
+                        return element;
+                    }
+                }
+
+            } catch {
+                // Continue
+            }
+        }
+
+        return null;
+    }
+
+
+    // =========================================================
+    // FIRST NAME
     // =========================================================
 
     async fillFirstName() {
@@ -53,40 +144,15 @@ class RateChecker {
             `👤 Entering First Name: ${this.testFirstName}`
         );
 
-        const possibleSelectors = [
+        const input =
+            await this.findVisibleInput([
 
-            'input[placeholder*="First Name" i]',
+                'input:not([type="hidden"])[placeholder*="First Name" i]',
+                'input:not([type="hidden"])[name*="first" i]',
+                'input:not([type="hidden"])[id*="first" i]',
+                'input:not([type="hidden"])[aria-label*="First Name" i]'
 
-            'input[name*="first" i]',
-
-            'input[id*="first" i]',
-
-            'input[aria-label*="First Name" i]'
-        ];
-
-
-        let input = null;
-
-
-        for (
-            const selector
-            of possibleSelectors
-        ) {
-
-            const locator =
-                this.page.locator(selector);
-
-            if (
-                await locator.count() > 0
-            ) {
-
-                input =
-                    locator.first();
-
-                break;
-            }
-        }
-
+            ]);
 
         if (!input) {
 
@@ -95,17 +161,9 @@ class RateChecker {
             );
         }
 
-
-        await input.waitFor({
-            state: 'visible',
-            timeout: 10000
-        });
-
-
         await input.fill(
             this.testFirstName
         );
-
 
         console.log(
             '✅ First Name entered'
@@ -114,7 +172,7 @@ class RateChecker {
 
 
     // =========================================================
-    // FILL LAST NAME
+    // LAST NAME
     // =========================================================
 
     async fillLastName() {
@@ -123,40 +181,15 @@ class RateChecker {
             `👤 Entering Last Name: ${this.testLastName}`
         );
 
-        const possibleSelectors = [
+        const input =
+            await this.findVisibleInput([
 
-            'input[placeholder*="Last Name" i]',
+                'input:not([type="hidden"])[placeholder*="Last Name" i]',
+                'input:not([type="hidden"])[name*="last" i]',
+                'input:not([type="hidden"])[id*="last" i]',
+                'input:not([type="hidden"])[aria-label*="Last Name" i]'
 
-            'input[name*="last" i]',
-
-            'input[id*="last" i]',
-
-            'input[aria-label*="Last Name" i]'
-        ];
-
-
-        let input = null;
-
-
-        for (
-            const selector
-            of possibleSelectors
-        ) {
-
-            const locator =
-                this.page.locator(selector);
-
-            if (
-                await locator.count() > 0
-            ) {
-
-                input =
-                    locator.first();
-
-                break;
-            }
-        }
-
+            ]);
 
         if (!input) {
 
@@ -165,20 +198,84 @@ class RateChecker {
             );
         }
 
-
-        await input.waitFor({
-            state: 'visible',
-            timeout: 10000
-        });
-
-
         await input.fill(
             this.testLastName
         );
 
-
         console.log(
             '✅ Last Name entered'
+        );
+    }
+
+
+    // =========================================================
+    // EMAIL
+    // =========================================================
+
+    async fillEmail() {
+
+        const input =
+            await this.findVisibleInput([
+
+                'input:not([type="hidden"])[type="email"]',
+                'input:not([type="hidden"])[placeholder*="email" i]',
+                'input:not([type="hidden"])[name*="email" i]',
+                'input:not([type="hidden"])[id*="email" i]'
+
+            ]);
+
+        if (!input) {
+
+            console.log(
+                '⚠️ Email field not found. Continuing...'
+            );
+
+            return;
+        }
+
+        await input.fill(
+            this.testEmail
+        );
+
+        console.log(
+            `📧 Email entered: ${this.testEmail}`
+        );
+    }
+
+
+    // =========================================================
+    // PHONE
+    // =========================================================
+
+    async fillPhone() {
+
+        const input =
+            await this.findVisibleInput([
+
+                'input:not([type="hidden"])[type="tel"]',
+                'input:not([type="hidden"])[placeholder*="phone" i]',
+                'input:not([type="hidden"])[placeholder*="mobile" i]',
+                'input:not([type="hidden"])[name*="phone" i]',
+                'input:not([type="hidden"])[name*="mobile" i]',
+                'input:not([type="hidden"])[id*="phone" i]'
+
+            ]);
+
+        if (!input) {
+
+            console.log(
+                '⚠️ Phone field not found. Continuing...'
+            );
+
+            return;
+        }
+
+        await input.fill(
+            this.testPhone
+        );
+
+        console.log(
+            `📱 Phone entered: ${this.testPhone}`
         );
     }
 
@@ -195,88 +292,79 @@ class RateChecker {
         const count =
             await selects.count();
 
-
         console.log(
             `🔎 Select elements found: ${count}`
         );
 
+        for (let i = 0; i < count; i++) {
 
-        for (
-            let i = 0;
-            i < count;
-            i++
-        ) {
+            try {
 
-            const select =
-                selects.nth(i);
+                const select =
+                    selects.nth(i);
 
+                if (!await select.isVisible()) {
+                    continue;
+                }
 
-            const options =
-                await select
-                    .locator('option')
-                    .evaluateAll(
-                        elements =>
-                            elements.map(
-                                option => ({
-                                    text:
-                                        option.textContent
-                                            .trim(),
+                const options =
+                    await select
+                        .locator('option')
+                        .evaluateAll(
+                            elements =>
+                                elements.map(
+                                    option => ({
+                                        text:
+                                            option.textContent.trim(),
 
-                                    value:
-                                        option.value
-                                })
-                            )
+                                        value:
+                                            option.value
+                                    })
+                                )
+                        );
+
+                const optionText =
+                    options
+                        .map(
+                            option =>
+                                `${option.text} ${option.value}`
+                        )
+                        .join(' ')
+                        .toLowerCase();
+
+                const isCurrency =
+                    optionText.includes('gbp') ||
+                    optionText.includes('eur') ||
+                    optionText.includes('aud') ||
+                    optionText.includes('pound') ||
+                    optionText.includes('euro') ||
+                    optionText.includes('australian');
+
+                if (isCurrency) {
+                    continue;
+                }
+
+                const hasService =
+                    optionText.includes('assignment') ||
+                    optionText.includes('essay') ||
+                    optionText.includes('coursework') ||
+                    optionText.includes('dissertation') ||
+                    optionText.includes('thesis') ||
+                    optionText.includes('homework');
+
+                if (hasService) {
+
+                    console.log(
+                        `✅ Service dropdown found: select ${i + 1}`
                     );
 
+                    return select;
+                }
 
-            console.log(
-                `Select ${i + 1}:`,
-                options
-            );
-
-
-            const optionText =
-                options
-                    .map(
-                        option =>
-                            `${option.text} ${option.value}`
-                    )
-                    .join(' ')
-                    .toLowerCase();
-
-
-            /*
-             * Service dropdown contains options such as:
-             *
-             * Essay
-             * Coursework
-             * Assignment
-             * Dissertation
-             * etc.
-             *
-             * Currency dropdown contains GBP/EUR/AUD.
-             */
-
-            const isCurrencyDropdown =
-                optionText.includes('gbp') &&
-                optionText.includes('eur') &&
-                optionText.includes('aud');
-
-
-            if (
-                !isCurrencyDropdown &&
-                optionText.includes('assignment') &&
-                optionText.includes('essay')
-            ) {
-
-                console.log(
-                    `✅ Service dropdown found: select ${i + 1}`
-                );
-
-                return select;
+            } catch {
+                // Continue
             }
         }
-
 
         return null;
     }
@@ -292,18 +380,17 @@ class RateChecker {
             `\n📚 Selecting service: ${this.testService}`
         );
 
-
         const dropdown =
             await this.findServiceDropdown();
 
-
         if (!dropdown) {
 
-            throw new Error(
-                'Service dropdown was not found.'
+            console.log(
+                `⚠️ Service dropdown not found on ${this.websiteName}.`
             );
-        }
 
+            return false;
+        }
 
         const options =
             await dropdown
@@ -313,8 +400,7 @@ class RateChecker {
                         elements.map(
                             option => ({
                                 text:
-                                    option.textContent
-                                        .trim(),
+                                    option.textContent.trim(),
 
                                 value:
                                     option.value
@@ -322,60 +408,55 @@ class RateChecker {
                         )
                 );
 
-
-        const matchingOption =
+        let matchingOption =
             options.find(
-                option => {
-
-                    const text =
-                        option.text
-                            .trim()
-                            .toLowerCase();
-
-                    const value =
-                        option.value
-                            .trim()
-                            .toLowerCase();
-
-
-                    return (
-                        text ===
-                            this.testService.toLowerCase()
-                        ||
-                        value ===
-                            this.testService.toLowerCase()
-                    );
-                }
+                option =>
+                    option.text.toLowerCase() ===
+                    this.testService.toLowerCase()
             );
-
 
         if (!matchingOption) {
 
-            throw new Error(
-                `Service "${this.testService}" was not found.`
-            );
+            matchingOption =
+                options.find(
+                    option =>
+                        option.text
+                            .toLowerCase()
+                            .includes(
+                                this.testService.toLowerCase()
+                            )
+                );
         }
 
+        if (!matchingOption) {
+
+            console.log(
+                `⚠️ Service "${this.testService}" was not found.`
+            );
+
+            return false;
+        }
 
         console.log(
             'Using service option:',
             matchingOption
         );
 
-
         await dropdown.selectOption(
             matchingOption.value
         );
 
-
-        await this.page.waitForTimeout(
-            500
+        await dropdown.dispatchEvent(
+            'change'
         );
 
+        await this.page.waitForTimeout(500);
 
         console.log(
-            `✅ Service selected: ${this.testService}`
+            `✅ Service selected: ${matchingOption.text}`
         );
+
+        return true;
     }
 
 
@@ -391,59 +472,68 @@ class RateChecker {
         const count =
             await selects.count();
 
+        for (let i = 0; i < count; i++) {
 
-        for (
-            let i = 0;
-            i < count;
-            i++
-        ) {
+            try {
 
-            const select =
-                selects.nth(i);
+                const select =
+                    selects.nth(i);
 
+                if (!await select.isVisible()) {
+                    continue;
+                }
 
-            const options =
-                await select
-                    .locator('option')
-                    .evaluateAll(
-                        elements =>
-                            elements.map(
-                                option => ({
-                                    text:
-                                        option.textContent
-                                            .trim(),
+                const options =
+                    await select
+                        .locator('option')
+                        .evaluateAll(
+                            elements =>
+                                elements.map(
+                                    option => ({
+                                        text:
+                                            option.textContent.trim(),
 
-                                    value:
-                                        option.value
-                                })
-                            )
+                                        value:
+                                            option.value
+                                    })
+                                )
+                        );
+
+                const optionText =
+                    options
+                        .map(
+                            option =>
+                                `${option.text} ${option.value}`
+                        )
+                        .join(' ')
+                        .toUpperCase();
+
+                const currencyCount = [
+
+                    optionText.includes('GBP') ||
+                    optionText.includes('POUND'),
+
+                    optionText.includes('EUR') ||
+                    optionText.includes('EURO'),
+
+                    optionText.includes('AUD') ||
+                    optionText.includes('AUSTRALIAN')
+
+                ].filter(Boolean).length;
+
+                if (currencyCount >= 2) {
+
+                    console.log(
+                        `✅ Currency dropdown found: select ${i + 1}`
                     );
 
+                    return select;
+                }
 
-            const optionText =
-                options
-                    .map(
-                        option =>
-                            `${option.text} ${option.value}`
-                    )
-                    .join(' ')
-                    .toUpperCase();
-
-
-            if (
-                optionText.includes('GBP') &&
-                optionText.includes('EUR') &&
-                optionText.includes('AUD')
-            ) {
-
-                console.log(
-                    `✅ Currency dropdown found: select ${i + 1}`
-                );
-
-                return select;
+            } catch {
+                // Continue
             }
         }
-
 
         return null;
     }
@@ -459,18 +549,15 @@ class RateChecker {
             `\n💱 Selecting currency: ${currency}`
         );
 
-
         const dropdown =
             await this.findCurrencyDropdown();
-
 
         if (!dropdown) {
 
             throw new Error(
-                'Currency dropdown was not found.'
+                `Currency dropdown was not found on ${this.websiteName}.`
             );
         }
-
 
         const options =
             await dropdown
@@ -480,8 +567,7 @@ class RateChecker {
                         elements.map(
                             option => ({
                                 text:
-                                    option.textContent
-                                        .trim(),
+                                    option.textContent.trim(),
 
                                 value:
                                     option.value
@@ -489,54 +575,76 @@ class RateChecker {
                         )
                 );
 
-
         const matchingOption =
-            options.find(
-                option => {
+            options.find(option => {
 
-                    const text =
-                        option.text
-                            .trim()
-                            .toUpperCase();
+                const text =
+                    option.text.toUpperCase();
 
-                    const value =
-                        option.value
-                            .trim()
-                            .toUpperCase();
+                const value =
+                    option.value.toUpperCase();
 
-
-                    return (
-                        text === currency ||
-                        value === currency ||
-                        text.includes(currency)
-                    );
+                if (
+                    text.includes(currency) ||
+                    value.includes(currency)
+                ) {
+                    return true;
                 }
-            );
 
+                if (
+                    currency === 'GBP' &&
+                    (
+                        text.includes('POUND') ||
+                        value.includes('POUND')
+                    )
+                ) {
+                    return true;
+                }
+
+                if (
+                    currency === 'EUR' &&
+                    (
+                        text.includes('EURO') ||
+                        value.includes('EURO')
+                    )
+                ) {
+                    return true;
+                }
+
+                if (
+                    currency === 'AUD' &&
+                    (
+                        text.includes('AUSTRALIAN') ||
+                        value.includes('AUSTRALIAN')
+                    )
+                ) {
+                    return true;
+                }
+
+                return false;
+            });
 
         if (!matchingOption) {
 
             throw new Error(
-                `Currency ${currency} was not found in dropdown.`
+                `${currency} option was not found on ${this.websiteName}.`
             );
         }
 
-
         console.log(
-            'Using option:',
+            'Using currency option:',
             matchingOption
         );
-
 
         await dropdown.selectOption(
             matchingOption.value
         );
 
-
-        await this.page.waitForTimeout(
-            500
+        await dropdown.dispatchEvent(
+            'change'
         );
 
+        await this.page.waitForTimeout(500);
 
         console.log(
             `✅ ${currency} selected`
@@ -550,37 +658,15 @@ class RateChecker {
 
     async findAmountInput() {
 
-        const selectors = [
+        return await this.findVisibleInput([
 
-            'input[placeholder="Amount"]',
+            'input:not([type="hidden"])[placeholder="Amount"]',
+            'input:not([type="hidden"])[placeholder*="amount" i]',
+            'input:not([type="hidden"])[name*="amount" i]',
+            'input:not([type="hidden"])[id*="amount" i]',
+            'input:not([type="hidden"])[type="number"]'
 
-            'input[placeholder*="amount" i]',
-
-            'input[name*="amount" i]',
-
-            'input[id*="amount" i]'
-        ];
-
-
-        for (
-            const selector
-            of selectors
-        ) {
-
-            const locator =
-                this.page.locator(selector);
-
-
-            if (
-                await locator.count() > 0
-            ) {
-
-                return locator.first();
-            }
-        }
-
-
-        return null;
+        ]);
     }
 
 
@@ -594,29 +680,29 @@ class RateChecker {
             `💰 Entering amount: ${amount}`
         );
 
-
         const amountInput =
             await this.findAmountInput();
-
 
         if (!amountInput) {
 
             throw new Error(
-                'Amount input was not found.'
+                `Amount input was not found on ${this.websiteName}.`
             );
         }
-
-
-        await amountInput.waitFor({
-            state: 'visible',
-            timeout: 10000
-        });
-
 
         await amountInput.fill(
             String(amount)
         );
 
+        await amountInput.dispatchEvent(
+            'input'
+        );
+
+        await amountInput.dispatchEvent(
+            'change'
+        );
+
+        await this.page.waitForTimeout(500);
 
         console.log(
             '✅ Amount entered'
@@ -634,41 +720,84 @@ class RateChecker {
             '☑️ Checking terms and conditions...'
         );
 
-
-        const checkbox =
+        const checkboxes =
             this.page.locator(
                 'input[type="checkbox"]'
             );
 
-
         const count =
-            await checkbox.count();
-
+            await checkboxes.count();
 
         if (count === 0) {
 
             throw new Error(
-                'Terms and conditions checkbox was not found.'
+                `Terms and conditions checkbox was not found on ${this.websiteName}.`
             );
         }
 
+        let termsCheckbox = null;
 
-        /*
-         * There is currently one checkbox
-         * on the order form.
-         */
+        for (let i = 0; i < count; i++) {
 
-        const termsCheckbox =
-            checkbox.first();
+            const candidate =
+                checkboxes.nth(i);
 
+            try {
 
-        if (
-            !(await termsCheckbox.isChecked())
-        ) {
+                if (!await candidate.isVisible()) {
+                    continue;
+                }
 
+                const text =
+                    await candidate.evaluate(
+                        element => {
+
+                            const parent =
+                                element.closest('label') ||
+                                element.parentElement;
+
+                            return parent
+                                ? parent.innerText
+                                : '';
+                        }
+                    );
+
+                if (
+                    /terms|conditions|agree/i.test(text)
+                ) {
+
+                    termsCheckbox =
+                        candidate;
+
+                    break;
+                }
+
+            } catch {
+                // Continue
+            }
+        }
+
+        if (!termsCheckbox && count === 1) {
+            termsCheckbox = checkboxes.first();
+        }
+
+        if (!termsCheckbox) {
+
+            throw new Error(
+                'Terms and conditions checkbox could not be identified.'
+            );
+        }
+
+        if (!await termsCheckbox.isChecked()) {
             await termsCheckbox.check();
         }
 
+        if (!await termsCheckbox.isChecked()) {
+
+            throw new Error(
+                'Terms and conditions checkbox could not be checked.'
+            );
+        }
 
         console.log(
             '✅ Terms and conditions accepted'
@@ -677,87 +806,183 @@ class RateChecker {
 
 
     // =========================================================
-    // CHECK FORM BEFORE PAY NOW
+    // VERIFY FORM
     // =========================================================
 
     async verifyFormBeforePayment() {
 
         console.log(
-            '\n🔎 Verifying required fields before Pay Now...'
+            '\n🔎 Verifying form before Pay Now...'
         );
 
+        const firstName =
+            await this.findVisibleInput([
 
-        const fields = [
+                'input:not([type="hidden"])[placeholder*="First Name" i]',
+                'input:not([type="hidden"])[name*="first" i]',
+                'input:not([type="hidden"])[id*="first" i]'
 
-            {
-                name: 'First Name',
-                selector:
-                    'input[placeholder*="First Name" i]'
-            },
+            ]);
 
-            {
-                name: 'Last Name',
-                selector:
-                    'input[placeholder*="Last Name" i]'
-            },
-
-            {
-                name: 'Amount',
-                selector:
-                    'input[placeholder="Amount"]'
-            }
-        ];
-
-
-        for (
-            const field
-            of fields
-        ) {
-
-            const locator =
-                this.page.locator(
-                    field.selector
-                ).first();
-
-
-            if (
-                await locator.count() === 0
-            ) {
-
-                console.log(
-                    `⚠️ ${field.name}: input not found`
-                );
-
-                continue;
-            }
-
+        if (firstName) {
 
             const value =
-                await locator.inputValue();
-
+                await firstName.inputValue();
 
             console.log(
-                `${field.name}: ${value || 'EMPTY'}`
+                `First Name: ${value || 'EMPTY'}`
             );
-
 
             if (!value) {
 
                 throw new Error(
-                    `${field.name} is empty before Pay Now.`
+                    'First Name is empty before Pay Now.'
                 );
             }
         }
 
+        const lastName =
+            await this.findVisibleInput([
+
+                'input:not([type="hidden"])[placeholder*="Last Name" i]',
+                'input:not([type="hidden"])[name*="last" i]',
+                'input:not([type="hidden"])[id*="last" i]'
+
+            ]);
+
+        if (lastName) {
+
+            const value =
+                await lastName.inputValue();
+
+            console.log(
+                `Last Name: ${value || 'EMPTY'}`
+            );
+
+            if (!value) {
+
+                throw new Error(
+                    'Last Name is empty before Pay Now.'
+                );
+            }
+        }
+
+        const amount =
+            await this.findAmountInput();
+
+        if (amount) {
+
+            const value =
+                await amount.inputValue();
+
+            console.log(
+                `Amount: ${value || 'EMPTY'}`
+            );
+
+            if (!value) {
+
+                throw new Error(
+                    'Amount is empty before Pay Now.'
+                );
+            }
+        }
 
         console.log(
-            '✅ Required text fields are filled'
+            '✅ Form verification completed.'
         );
     }
 
 
     // =========================================================
-    // CLICK PAY NOW AND DETECT NEW PAGE
+    // FIND PAY NOW
+    // =========================================================
+
+    async findPayNowButton() {
+
+        const selectors = [
+
+            '#payButton',
+
+            'button:has-text("Pay Now")',
+
+            'button:has-text("Pay now")',
+
+            'input[type="submit"][value*="Pay Now" i]',
+
+            'button[type="submit"]',
+
+            'input[type="submit"]'
+
+        ];
+
+        for (const selector of selectors) {
+
+            try {
+
+                const locator =
+                    this.page.locator(selector);
+
+                const count =
+                    await locator.count();
+
+                for (let i = 0; i < count; i++) {
+
+                    const element =
+                        locator.nth(i);
+
+                    if (
+                        await element.isVisible() &&
+                        await element.isEnabled()
+                    ) {
+
+                        return element;
+                    }
+                }
+
+            } catch {
+                // Continue
+            }
+        }
+
+        return null;
+    }
+
+
+    // =========================================================
+    // IS PAYMENT PAGE
+    // =========================================================
+
+    isPaymentPage(url) {
+
+        if (!url) {
+            return false;
+        }
+
+        const lowerUrl =
+            url.toLowerCase();
+
+        return (
+
+            lowerUrl.includes('checkout.stripe.com') ||
+
+            lowerUrl.includes('securepayments702.digiwiser.co') ||
+
+            lowerUrl.includes('digiwiser.co') ||
+
+            lowerUrl.includes('stripe.com') ||
+
+            lowerUrl.includes('payment') ||
+
+            lowerUrl.includes('checkout') ||
+
+            lowerUrl.includes('validator.php')
+
+        );
+    }
+
+
+    // =========================================================
+    // CLICK PAY NOW
     // =========================================================
 
     async clickPayNow() {
@@ -766,74 +991,43 @@ class RateChecker {
             '💳 Clicking Pay Now...'
         );
 
-
         const payNow =
-            this.page.getByRole(
-                'button',
-                {
-                    name: /pay now/i
-                }
-            );
+            await this.findPayNowButton();
 
-
-        if (
-            await payNow.count() === 0
-        ) {
+        if (!payNow) {
 
             throw new Error(
-                'Pay Now button was not found.'
+                `Pay Now button was not found on ${this.websiteName}.`
             );
         }
-
-
-        await payNow.first().waitFor({
-            state: 'visible',
-            timeout: 10000
-        });
-
-
-        /*
-         * Remember existing pages.
-         */
-
-        const pagesBefore =
-            this.context.pages();
-
 
         const oldUrl =
             this.page.url();
 
+        const pagesBefore =
+            [...this.context.pages()];
 
         console.log(
             `Current page: ${oldUrl}`
         );
 
-
-        await payNow.first().click();
-
+        await payNow.click({
+            timeout: 10000
+        });
 
         console.log(
             '✅ Pay Now clicked'
         );
 
+        // Wait for navigation/new page
+        await this.page.waitForTimeout(3000);
 
-        /*
-         * Give the website time to submit
-         * the form.
-         */
-
-        await this.page.waitForTimeout(
-            3000
-        );
-
-
-        /*
-         * Check whether a new page/tab was opened.
-         */
+        // =====================================================
+        // CHECK NEW PAGES
+        // =====================================================
 
         const pagesAfter =
             this.context.pages();
-
 
         if (
             pagesAfter.length >
@@ -844,63 +1038,34 @@ class RateChecker {
                 '🆕 New browser page detected.'
             );
 
-
             const newPages =
                 pagesAfter.filter(
-                    page =>
-                        !pagesBefore.includes(page)
+                    currentPage =>
+                        !pagesBefore.includes(
+                            currentPage
+                        )
                 );
 
-
-            if (
-                newPages.length > 0
-            ) {
+            if (newPages.length > 0) {
 
                 this.page =
                     newPages[
                         newPages.length - 1
                     ];
 
+                await this.page
+                    .waitForLoadState(
+                        'domcontentloaded'
+                    )
+                    .catch(() => {});
 
-                await this.page.waitForLoadState(
-                    'domcontentloaded'
-                ).catch(() => {});
-
-
-                await this.page.waitForTimeout(
-                    2000
-                );
-
-
-                console.log(
-                    `🔗 New page URL: ${this.page.url()}`
-                );
+                await this.page.waitForTimeout(2000);
             }
         }
 
-
-        /*
-         * Also check whether the same page
-         * navigated.
-         */
-
-        const newUrl =
-            this.page.url();
-
-
-        if (
-            newUrl !== oldUrl
-        ) {
-
-            console.log(
-                `🔄 Page navigated to: ${newUrl}`
-            );
-        }
-
-
-        /*
-         * Search all open pages for Stripe.
-         */
+        // =====================================================
+        // CHECK ALL OPEN PAGES
+        // =====================================================
 
         for (
             const currentPage
@@ -910,76 +1075,91 @@ class RateChecker {
             const url =
                 currentPage.url();
 
-
             console.log(
                 `🔍 Open page: ${url}`
             );
 
-
             if (
-                url
-                    .toLowerCase()
-                    .includes(
-                        'checkout.stripe.com'
-                    )
+                this.isPaymentPage(url)
             ) {
 
                 console.log(
-                    '🎉 Stripe checkout detected!'
+                    '🎉 Payment page detected!'
                 );
-
 
                 this.page =
                     currentPage;
 
+                await this.page
+                    .waitForLoadState(
+                        'domcontentloaded'
+                    )
+                    .catch(() => {});
 
-                await this.page.waitForLoadState(
-                    'domcontentloaded'
-                ).catch(() => {});
+                await this.page.waitForTimeout(3000);
 
-
-                await this.page.waitForTimeout(
-                    3000
+                console.log(
+                    `🔗 Payment URL: ${this.page.url()}`
                 );
-
 
                 return true;
             }
         }
 
+        // =====================================================
+        // SAME PAGE NAVIGATION
+        // =====================================================
+
+        const currentUrl =
+            this.page.url();
+
+        if (
+            currentUrl !== oldUrl
+        ) {
+
+            console.log(
+                `🔄 Page navigated to: ${currentUrl}`
+            );
+
+            if (
+                this.isPaymentPage(currentUrl)
+            ) {
+
+                console.log(
+                    '🎉 Payment page detected!'
+                );
+
+                return true;
+            }
+        }
 
         return false;
     }
 
 
     // =========================================================
-    // WAIT FOR STRIPE
+    // WAIT FOR PAYMENT PAGE
     // =========================================================
 
-    async waitForStripe() {
+    async waitForPaymentPage() {
 
         console.log(
-            '⏳ Waiting for Stripe checkout...'
+            '⏳ Waiting for payment page...'
         );
-
 
         const timeout =
             30000;
 
-
         const startTime =
             Date.now();
-
 
         while (
             Date.now() - startTime <
             timeout
         ) {
 
-
             const pages =
                 this.context.pages();
-
 
             for (
                 const currentPage
@@ -989,85 +1169,36 @@ class RateChecker {
                 const url =
                     currentPage.url();
 
+                console.log(
+                    `🔍 Checking: ${url}`
+                );
 
                 if (
-                    url
-                        .toLowerCase()
-                        .includes(
-                            'checkout.stripe.com'
-                        )
+                    this.isPaymentPage(url)
                 ) {
 
                     console.log(
-                        '✅ Stripe checkout detected'
+                        '✅ Payment page detected'
                     );
-
 
                     this.page =
                         currentPage;
 
+                    await this.page
+                        .waitForLoadState(
+                            'domcontentloaded'
+                        )
+                        .catch(() => {});
 
-                    await this.page.waitForLoadState(
-                        'domcontentloaded'
-                    ).catch(() => {});
-
-
-                    await this.page.waitForTimeout(
-                        3000
-                    );
-
+                    await this.page.waitForTimeout(3000);
 
                     console.log(
-                        `🔗 Stripe URL: ${this.page.url()}`
+                        `🔗 Payment URL: ${this.page.url()}`
                     );
-
 
                     return this.page;
                 }
             }
-
-
-            /*
-             * Also inspect page text.
-             */
-
-            try {
-
-                const text =
-                    await this.page
-                        .locator('body')
-                        .innerText();
-
-
-                if (
-                    text
-                        .toLowerCase()
-                        .includes(
-                            'pay online services'
-                        )
-                ) {
-
-                    /*
-                     * We may already be on the
-                     * Stripe checkout page even
-                     * if URL detection is delayed.
-                     */
-
-                    if (
-                        this.page.url()
-                            .includes(
-                                'checkout.stripe'
-                            )
-                    ) {
-
-                        return this.page;
-                    }
-                }
-
-            } catch {
-                // Ignore temporary page errors
-            }
-
 
             await new Promise(
                 resolve =>
@@ -1078,9 +1209,8 @@ class RateChecker {
             );
         }
 
-
         throw new Error(
-            'Stripe checkout was not detected within 30 seconds.'
+            'Payment/checkout page was not detected within 30 seconds.'
         );
     }
 
@@ -1091,28 +1221,24 @@ class RateChecker {
 
     extractNumber(value) {
 
-        if (!value) {
+        if (
+            value === null ||
+            value === undefined
+        ) {
             return null;
         }
-
 
         const cleaned =
             String(value)
                 .replace(/,/g, '')
                 .replace(/[^\d.-]/g, '');
 
-
         const number =
             Number(cleaned);
 
-
-        if (
-            Number.isNaN(number)
-        ) {
-
+        if (Number.isNaN(number)) {
             return null;
         }
-
 
         return number;
     }
@@ -1124,75 +1250,91 @@ class RateChecker {
 
     extractPKR(text) {
 
+        if (!text) {
+            return null;
+        }
+
         const patterns = [
 
-            /PKR\s*([\d,.]+)/i,
+            /PKR\s*[:\-]?\s*([\d,.]+)/i,
 
-            /Rs\.?\s*([\d,.]+)/i,
+            /([\d,.]+)\s*PKR/i,
 
-            /₨\s*([\d,.]+)/i
+            /Rs\.?\s*[:\-]?\s*([\d,.]+)/i,
+
+            /([\d,.]+)\s*Rs\.?/i,
+
+            /₨\s*([\d,.]+)/i,
+
+            /([\d,.]+)\s*₨/i
+
         ];
 
-
-        for (
-            const pattern
-            of patterns
-        ) {
+        for (const pattern of patterns) {
 
             const match =
                 text.match(pattern);
 
-
             if (match) {
 
-                return this.extractNumber(
-                    match[1]
-                );
+                const value =
+                    this.extractNumber(
+                        match[1]
+                    );
+
+                if (
+                    value !== null
+                ) {
+
+                    return value;
+                }
             }
         }
-
 
         return null;
     }
 
 
     // =========================================================
-    // EXTRACT FOREIGN CURRENCY
+    // EXTRACT FOREIGN AMOUNT
     // =========================================================
 
-    extractForeignAmount(
-        text,
-        currency
-    ) {
+    extractForeignAmount(text, currency) {
+
+        if (!text) {
+            return null;
+        }
 
         const patterns = {
 
             GBP: [
 
                 /£\s*([\d,.]+)/i,
+                /GBP\s*[:\-]?\s*([\d,.]+)/i,
+                /([\d,.]+)\s*GBP/i
 
-                /GBP\s*([\d,.]+)/i
             ],
 
             EUR: [
 
                 /€\s*([\d,.]+)/i,
+                /EUR\s*[:\-]?\s*([\d,.]+)/i,
+                /([\d,.]+)\s*EUR/i
 
-                /EUR\s*([\d,.]+)/i
             ],
 
             AUD: [
 
                 /A\$\s*([\d,.]+)/i,
+                /AUD\s*[:\-]?\s*([\d,.]+)/i,
+                /([\d,.]+)\s*AUD/i
 
-                /AUD\s*([\d,.]+)/i
             ]
-        };
 
+        };
 
         const currencyPatterns =
             patterns[currency] || [];
-
 
         for (
             const pattern
@@ -1202,15 +1344,21 @@ class RateChecker {
             const match =
                 text.match(pattern);
 
-
             if (match) {
 
-                return this.extractNumber(
-                    match[1]
-                );
+                const value =
+                    this.extractNumber(
+                        match[1]
+                    );
+
+                if (
+                    value !== null
+                ) {
+
+                    return value;
+                }
             }
         }
-
 
         return null;
     }
@@ -1220,83 +1368,181 @@ class RateChecker {
     // EXTRACT DISPLAYED RATE
     // =========================================================
 
-    extractDisplayedRate(
-        text,
-        currency
-    ) {
+    extractDisplayedRate(text, currency) {
 
-        const pattern =
-            new RegExp(
-                `1\\s*${currency}\\s*=\\s*([\\d,.]+)\\s*PKR`,
-                'i'
-            );
-
-
-        const match =
-            text.match(pattern);
-
-
-        if (match) {
-
-            return this.extractNumber(
-                match[1]
-            );
+        if (!text) {
+            return null;
         }
 
+        const currencyNames = {
+
+            GBP: '(?:GBP|POUND|POUNDS|£)',
+
+            EUR: '(?:EUR|EURO|EUROS|€)',
+
+            AUD: '(?:AUD|AUSTRALIAN\\s+DOLLAR|A\\$)'
+
+        };
+
+        const currencyPattern =
+            currencyNames[currency];
+
+        if (!currencyPattern) {
+            return null;
+        }
+
+        const patterns = [
+
+            new RegExp(
+                `1\\s*${currencyPattern}\\s*=\\s*(?:PKR\\s*)?([\\d,.]+)\\s*PKR?`,
+                'i'
+            ),
+
+            new RegExp(
+                `1\\s*${currencyPattern}\\s*(?:equals|is)\\s*(?:PKR\\s*)?([\\d,.]+)`,
+                'i'
+            ),
+
+            new RegExp(
+                `${currencyPattern}\\s*1\\s*=\\s*(?:PKR\\s*)?([\\d,.]+)\\s*PKR?`,
+                'i'
+            ),
+
+            new RegExp(
+                `(?:PKR\\s*)?([\\d,.]+)\\s*PKR\\s*=\\s*1\\s*${currencyPattern}`,
+                'i'
+            )
+
+        ];
+
+        for (
+            const pattern
+            of patterns
+        ) {
+
+            const match =
+                text.match(pattern);
+
+            if (match) {
+
+                const value =
+                    this.extractNumber(
+                        match[1]
+                    );
+
+                if (
+                    value !== null
+                ) {
+
+                    return value;
+                }
+            }
+        }
 
         return null;
     }
 
 
     // =========================================================
-    // READ STRIPE CONVERSION
+    // EXTRACT CONVERSION FEE
     // =========================================================
 
-    async readStripeConversion(
-        currency
+    extractConversionFee(text) {
+
+        if (!text) {
+            return 0;
+        }
+
+        const patterns = [
+
+            /includes\s+([\d.]+)\s*%\s*conversion\s*fee/i,
+
+            /conversion\s*fee\s*[:\-]?\s*([\d.]+)\s*%/i,
+
+            /conversion\s*fee\s*(?:of)?\s*([\d.]+)\s*%/i,
+
+            /([\d.]+)\s*%\s*conversion\s*fee/i
+
+        ];
+
+        for (
+            const pattern
+            of patterns
+        ) {
+
+            const match =
+                text.match(pattern);
+
+            if (match) {
+
+                const fee =
+                    Number(match[1]);
+
+                if (
+                    !Number.isNaN(fee)
+                ) {
+
+                    return fee;
+                }
+            }
+        }
+
+        return 0;
+    }
+
+
+    // =========================================================
+    // READ PAYMENT CONVERSION
+    // =========================================================
+
+    async readPaymentConversion(
+        currency,
+        enteredAmount
     ) {
 
         console.log(
-            '\n🔍 Reading Stripe conversion...'
+            '\n🔍 Reading payment conversion...'
         );
-
 
         const bodyText =
             await this.page
                 .locator('body')
-                .innerText();
-
-
-        console.log(
-            '\n---------- STRIPE PAGE TEXT ----------'
-        );
-
+                .innerText()
+                .catch(() => '');
 
         console.log(
-            bodyText.substring(
-                0,
-                3000
-            )
+            '\n---------- PAYMENT PAGE TEXT ----------'
         );
 
+        console.log(
+            bodyText.substring(0, 4000)
+        );
 
         console.log(
             '---------------------------------------'
         );
-
 
         const pkrAmount =
             this.extractPKR(
                 bodyText
             );
 
-
-        const foreignAmount =
+        let foreignAmount =
             this.extractForeignAmount(
                 bodyText,
                 currency
             );
 
+        // The entered amount is known and safer
+        // than guessing from payment-page text.
+        if (
+            foreignAmount === null ||
+            foreignAmount === 0
+        ) {
+
+            foreignAmount =
+                Number(enteredAmount);
+        }
 
         const displayedRate =
             this.extractDisplayedRate(
@@ -1304,10 +1550,13 @@ class RateChecker {
                 currency
             );
 
+        const conversionFee =
+            this.extractConversionFee(
+                bodyText
+            );
 
         let calculatedRate =
             null;
-
 
         if (
             pkrAmount !== null &&
@@ -1320,13 +1569,46 @@ class RateChecker {
                 foreignAmount;
         }
 
+        // =====================================================
+        // FINAL RATE
+        // =====================================================
+
+        let finalRate =
+            displayedRate;
+
+        if (
+            finalRate === null
+        ) {
+
+            finalRate =
+                calculatedRate;
+        }
+
+        // =====================================================
+        // REMOVE CONVERSION FEE
+        // =====================================================
+
+        let adjustedRate =
+            finalRate;
+
+        if (
+            finalRate !== null &&
+            conversionFee > 0
+        ) {
+
+            adjustedRate =
+                finalRate /
+                (1 + conversionFee / 100);
+        }
 
         console.log(
-            '\n💱 Stripe conversion data:'
+            '\n💱 Payment conversion data:'
         );
 
-
         console.table([{
+
+            Website:
+                this.websiteName,
 
             Currency:
                 currency,
@@ -1345,9 +1627,19 @@ class RateChecker {
                     ? Number(
                         calculatedRate.toFixed(6)
                     )
-                    : 'N/A'
-        }]);
+                    : 'N/A',
 
+            ConversionFee:
+                `${conversionFee}%`,
+
+            AdjustedRate:
+                adjustedRate !== null
+                    ? Number(
+                        adjustedRate.toFixed(6)
+                    )
+                    : 'N/A'
+
+        }]);
 
         return {
 
@@ -1357,8 +1649,53 @@ class RateChecker {
 
             displayedRate,
 
-            calculatedRate
+            calculatedRate,
+
+            conversionFee,
+
+            adjustedRate,
+
+            paymentUrl:
+                this.page.url()
         };
+    }
+
+
+    // =========================================================
+    // SAVE ERROR SCREENSHOT
+    // =========================================================
+
+    async saveErrorScreenshot(currency) {
+
+        try {
+
+            await this.page.screenshot({
+
+                path:
+                    this.getScreenshotPath(
+                        currency,
+                        'error'
+                    ),
+
+                fullPage:
+                    true
+            });
+
+            console.log(
+                `📸 Error screenshot saved: ${
+                    this.getScreenshotPath(
+                        currency,
+                        'error'
+                    )
+                }`
+            );
+
+        } catch {
+
+            console.log(
+                '⚠️ Could not save error screenshot.'
+            );
+        }
     }
 
 
@@ -1374,184 +1711,171 @@ class RateChecker {
             expectedRate
         } = data;
 
-
         console.log('\n');
-
 
         console.log(
             '=========================================='
         );
-
 
         console.log(
             `🧪 TESTING ${currency}`
         );
 
+        console.log(
+            `Website       : ${this.websiteName}`
+        );
+
+        console.log(
+            `URL           : ${this.orderUrl}`
+        );
 
         console.log(
             `Amount        : ${amount}`
         );
 
-
         console.log(
             `Expected Rate : ${expectedRate}`
         );
-
 
         console.log(
             '=========================================='
         );
 
-
         try {
 
-            // -------------------------------------------------
-            // 1. Open page
-            // -------------------------------------------------
+            // =================================================
+            // 1. OPEN
+            // =================================================
 
             await this.openOrderPage();
 
-
-            // -------------------------------------------------
-            // 2. Fill first name
-            // -------------------------------------------------
+            // =================================================
+            // 2. CUSTOMER
+            // =================================================
 
             await this.fillFirstName();
 
-
-            // -------------------------------------------------
-            // 3. Fill last name
-            // -------------------------------------------------
-
             await this.fillLastName();
 
+            await this.fillEmail();
 
-            // -------------------------------------------------
-            // 4. Select service
-            // -------------------------------------------------
+            await this.fillPhone();
+
+            // =================================================
+            // 3. SERVICE
+            // =================================================
 
             await this.selectService();
 
-
-            // -------------------------------------------------
-            // 5. Select currency
-            // -------------------------------------------------
+            // =================================================
+            // 4. CURRENCY
+            // =================================================
 
             await this.selectCurrency(
                 currency
             );
 
-
-            // -------------------------------------------------
-            // 6. Enter amount
-            // -------------------------------------------------
+            // =================================================
+            // 5. AMOUNT
+            // =================================================
 
             await this.fillAmount(
                 amount
             );
 
-
-            // -------------------------------------------------
-            // 7. Accept terms
-            // -------------------------------------------------
+            // =================================================
+            // 6. TERMS
+            // =================================================
 
             await this.acceptTerms();
 
-
-            // -------------------------------------------------
-            // 8. Verify fields
-            // -------------------------------------------------
+            // =================================================
+            // 7. VERIFY
+            // =================================================
 
             await this.verifyFormBeforePayment();
 
+            // =================================================
+            // 8. PRE PAYMENT SCREENSHOT
+            // =================================================
 
-            // -------------------------------------------------
-            // 9. Click Pay Now
-            // -------------------------------------------------
+            const prePaymentPath =
+                this.getScreenshotPath(
+                    currency,
+                    'pre-payment'
+                );
 
-            const stripeOpened =
+            await this.page.screenshot({
+
+                path:
+                    prePaymentPath,
+
+                fullPage:
+                    true
+            });
+
+            console.log(
+                `📸 Pre-payment screenshot saved: ${prePaymentPath}`
+            );
+
+            // =================================================
+            // 9. CLICK PAY NOW
+            // =================================================
+
+            const paymentOpened =
                 await this.clickPayNow();
 
-
-            if (!stripeOpened) {
+            if (!paymentOpened) {
 
                 console.log(
-                    '\n⚠️ Stripe did not open immediately.'
+                    '\n⚠️ Payment page did not open immediately.'
                 );
 
                 console.log(
-                    'Current URL:',
-                    this.page.url()
+                    `Current URL: ${this.page.url()}`
                 );
-
-
-                /*
-                 * Take screenshot so we can see
-                 * what the website is showing.
-                 */
 
                 await this.page.screenshot({
 
                     path:
-                        `reports/${currency}-after-pay-now.png`,
+                        this.getScreenshotPath(
+                            currency,
+                            'after-pay-now'
+                        ),
 
                     fullPage:
                         true
                 });
 
-
-                /*
-                 * Now wait for Stripe.
-                 */
-
-                await this.waitForStripe();
-
-            } else {
-
-                console.log(
-                    '✅ Payment page opened successfully.'
-                );
+                await this.waitForPaymentPage();
             }
 
+            // =================================================
+            // 10. READ PAYMENT PAGE
+            // =================================================
 
-            // -------------------------------------------------
-            // 10. Read conversion
-            // -------------------------------------------------
-
-            const stripeData =
-                await this.readStripeConversion(
-                    currency
+            const paymentData =
+                await this.readPaymentConversion(
+                    currency,
+                    amount
                 );
 
+            // =================================================
+            // 11. ACTUAL RATE
+            // =================================================
 
-            // -------------------------------------------------
-            // 11. Determine actual rate
-            // -------------------------------------------------
+            const actualRate =
+                paymentData.adjustedRate;
 
-            let actualRate =
-                stripeData.displayedRate;
-
-
-            if (
-                actualRate === null
-            ) {
-
-                actualRate =
-                    stripeData.calculatedRate;
-            }
-
+            // =================================================
+            // 12. DIFFERENCE
+            // =================================================
 
             let difference =
                 null;
 
-
             let status =
                 'FAIL';
-
-
-            // -------------------------------------------------
-            // 12. Compare
-            // -------------------------------------------------
 
             if (
                 actualRate !== null
@@ -1563,19 +1887,9 @@ class RateChecker {
                         expectedRate
                     );
 
-
-                /*
-                 * Tolerance:
-                 * 0.05 PKR
-                 */
-
-                const tolerance =
-                    0.05;
-
-
                 if (
                     difference <=
-                    tolerance
+                    this.tolerance
                 ) {
 
                     status =
@@ -1583,12 +1897,17 @@ class RateChecker {
                 }
             }
 
-
-            // -------------------------------------------------
-            // 13. Result
-            // -------------------------------------------------
+            // =================================================
+            // 13. RESULT
+            // =================================================
 
             const result = {
+
+                Website:
+                    this.websiteName,
+
+                URL:
+                    this.orderUrl,
 
                 Currency:
                     currency,
@@ -1616,73 +1935,100 @@ class RateChecker {
                         : 'N/A',
 
                 ForeignAmount:
-                    stripeData.foreignAmount
-                        ?? 'N/A',
+                    paymentData.foreignAmount ??
+                    'N/A',
 
                 PKRAmount:
-                    stripeData.pkrAmount
-                        ?? 'N/A',
+                    paymentData.pkrAmount ??
+                    'N/A',
+
+                ConversionFee:
+                    paymentData.conversionFee,
+
+                PaymentURL:
+                    paymentData.paymentUrl,
 
                 Status:
                     status,
 
                 Error:
                     ''
-            };
 
+            };
 
             this.results.push(
                 result
             );
 
-
             console.log(
                 '\n📊 Currency result:'
             );
-
 
             console.table([
                 result
             ]);
 
+            // =================================================
+            // 14. RESULT SCREENSHOT
+            // =================================================
+
+            const resultPath =
+                this.getScreenshotPath(
+                    currency,
+                    'result'
+                );
+
+            await this.page.screenshot({
+
+                path:
+                    resultPath,
+
+                fullPage:
+                    true
+            });
+
+            console.log(
+                `📸 Result screenshot saved: ${resultPath}`
+            );
+
+            if (
+                status === 'PASS'
+            ) {
+
+                console.log(
+                    `\n✅ ${this.websiteName} - ${currency} PASS`
+                );
+
+            } else {
+
+                console.log(
+                    `\n❌ ${this.websiteName} - ${currency} FAIL`
+                );
+            }
 
             return result;
-
 
         } catch (error) {
 
             console.error(
-                `\n❌ ${currency} test failed`
+                `\n❌ ${this.websiteName} - ${currency} test failed`
             );
-
 
             console.error(
                 error.message
             );
 
-
-            try {
-
-                await this.page.screenshot({
-
-                    path:
-                        `reports/${currency}-error.png`,
-
-                    fullPage:
-                        true
-                });
-
-
-                console.log(
-                    `📸 Screenshot saved: reports/${currency}-error.png`
-                );
-
-            } catch {
-                // Ignore screenshot errors
-            }
-
+            await this.saveErrorScreenshot(
+                currency
+            );
 
             const result = {
+
+                Website:
+                    this.websiteName,
+
+                URL:
+                    this.orderUrl,
 
                 Currency:
                     currency,
@@ -1705,18 +2051,23 @@ class RateChecker {
                 PKRAmount:
                     'N/A',
 
+                ConversionFee:
+                    'N/A',
+
+                PaymentURL:
+                    this.page.url(),
+
                 Status:
                     'ERROR',
 
                 Error:
                     error.message
-            };
 
+            };
 
             this.results.push(
                 result
             );
-
 
             return result;
         }
@@ -1738,7 +2089,6 @@ class RateChecker {
                 data
             );
         }
-
 
         return this.results;
     }
