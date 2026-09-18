@@ -44,6 +44,51 @@ const WEBSITES = [
     {
         name: 'Dissertation US',
         url: 'https://dissertation.us.com/order/'
+    },
+
+    {
+        name: 'Assignment Help Dubai',
+        url: 'https://dissertationhelpdubai.ae/order/'
+    },
+
+    {
+        name: 'Do-My-Assignment',
+        url: 'https://do-my-assignment.co.uk/order/'
+    },
+
+    {
+        name: 'Do My Assignments UK',
+        url: 'https://domyassignments.uk/order/'
+    },
+
+    {
+        name: 'Do My Online Class',
+        url: 'https://domyonlineclass.us.com/order/'
+    },
+
+    {
+        name: 'Help With Exam',
+        url: 'https://helpwithexam.com/order/'
+    },
+
+    {
+        name: 'Real Assignments',
+        url: 'https://realassignments.co.uk/order/'
+    },
+
+    {
+        name: 'Take My Online Classes',
+        url: 'https://takemyonlineclasses.us.com/order/'
+    },
+
+    {
+        name: 'Online Exam Help',
+        url: 'https://onlineexamhelp.co.uk/order/'
+    },
+
+    {
+        name: 'Pay For Assignments',
+        url: 'https://payforassignments.co.uk/order/'
     }
 
 ];
