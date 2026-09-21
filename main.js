@@ -89,6 +89,41 @@ const WEBSITES = [
     {
         name: 'Pay For Assignments',
         url: 'https://payforassignments.co.uk/order/'
+    },
+
+    {
+        name: 'Online Exam Help',
+        url: 'https://onlineexamhelp.us.com/'
+    },
+
+    {
+        name: 'Thesis Help',
+        url: 'https://thesishelp.de/'
+    },
+
+    {
+        name: 'Hire Book Writers',
+        url: 'https://hirebookwriters.us.com/order/'
+    },
+
+    {
+        name: 'My Assignment Services Qa',
+        url: 'https://myassignmentservices.qa/order/'
+    },
+
+    {
+        name: 'Take My Exam Online',
+        url: 'https://takemyexamonline.co.uk/order/'
+    },
+
+    {
+        name: 'Help With My Assignment', 
+        url: 'https://helpwithmyassignment.co.uk/order/'
+    },
+
+    {
+        name: 'Do My Assignments Ai',
+        url: "https://domyassignments.ai/order/"
     }
 
 ];
