@@ -99,7 +99,7 @@ function readCurrencyRates(filePath) {
 
         // Amount validation
         if (
-            Number.isNaN(amount) ||
+            Number.isNaN(amount) || 
             amount <= 0
         ) {
 

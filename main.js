@@ -82,23 +82,18 @@ const WEBSITES = [
     },
 
     {
-        name: 'Online Exam Help',
-        url: 'https://onlineexamhelp.co.uk/order/'
-    },
-
-    {
         name: 'Pay For Assignments',
         url: 'https://payforassignments.co.uk/order/'
     },
 
     {
         name: 'Online Exam Help',
-        url: 'https://onlineexamhelp.us.com/'
+        url: 'https://onlineexamhelp.us.com/order/'
     },
 
     {
         name: 'Thesis Help',
-        url: 'https://thesishelp.de/'
+        url: 'https://thesishelp.de/order/'
     },
 
     {
@@ -124,6 +119,61 @@ const WEBSITES = [
     {
         name: 'Do My Assignments Ai',
         url: "https://domyassignments.ai/order/"
+    },
+
+    {
+        name: 'Thesis Writing Service',
+        url: "https://thesiswritingservice.in/order/"
+    },
+
+    {
+        name: 'Write My Assignment 247',
+        url: 'https://writemyassignment247.co.uk/order/'
+    },
+
+    {
+        name: 'Assignment Writing Service',
+        url: 'https://assignmentwritingservice.co.uk/order/'
+    },
+
+    {
+        name: 'Assinment Help Singapore',
+        url: 'https://assignmenthelpsingapore.com.sg/order/'
+    },
+
+    {
+        name: 'Assignment Help UAE',
+        url: 'https://assignmenthelperuae.ae/order/'
+    },
+
+    {
+        name: 'Course Work Helper',
+        url: 'https://courseworkhelper.co.uk/order/'
+    },
+
+    {
+        name: 'Pay someone to take My Online Class',
+        url: 'https://paysomeonetotakemyonlineclass.us/order/'
+    },
+
+    {
+        name: 'Dissertation Makers',
+        url: 'https://dissertationmakers.co.uk/order/'
+    },
+
+    {
+        name: 'IB Essay Writer',
+        url: 'https://ibessaywriter.com/order/'
+    },
+
+    {
+        name: 'Take My Exam For Me',
+        url: 'https://takemyexamforme.us.com/order/'
+    },
+
+    {
+        name: 'Thesis Writer',
+        url: 'https://thesiswriter.co.uk/order/'
     }
 
 ];
